@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ME Geopolitics Brief</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: Georgia, serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 1rem 1rem 5rem;
+        line-height: 1.6;
+        color: #121212;
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px solid #121212;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+        gap: 1rem;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.3rem;
+      }
+      .date {
+        color: #666;
+        font-size: 0.85rem;
+        font-family: sans-serif;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 0.4rem;
+      }
+
+      .btn {
+        font-family: sans-serif;
+        font-size: 0.85rem;
+        padding: 0.35rem 0.75rem;
+        border: 1px solid #d0d0d0;
+        background: #fff;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .btn.active {
+        background: #121212;
+        color: #fff;
+      }
+
+      /* Topic pills */
+      .topics {
+        display: flex;
+        gap: 0.5rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e0e0e0;
+        overflow-x: auto;
+      }
+
+      .topic-pill {
+        font-family: sans-serif;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.9rem;
+        border: 1px solid #d0d0d0;
+        background: #fff;
+        border-radius: 999px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .topic-pill.active {
+        background: #121212;
+        color: #fff;
+        border-color: #121212;
+      }
+
+      /* Stories */
+      .stories {
+        padding-top: 1rem;
+      }
+
+      .story {
+        padding: 1.5rem 0;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .story-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        cursor: pointer;
+      }
+
+      .story-main {
+        flex: 1;
+      }
+
+      .story-topic {
+        font-family: sans-serif;
+        font-size: 0.75rem;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.3rem;
+        font-weight: 600;
+      }
+
+      .story-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+        line-height: 1.35;
+      }
+
+      .story-summary {
+        color: #4a4a4a;
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      .story-star {
+        font-size: 1.3rem;
+        color: #d0d0d0;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .story-star.saved {
+        color: #121212;
+      }
+
+      /* Expandable details */
+      .story-details {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e8e8e8;
+        display: none;
+      }
+
+      .story.expanded .story-details {
+        display: block;
+      }
+
+      .detail-section {
+        margin-bottom: 1rem;
+      }
+
+      .detail-title {
+        font-family: sans-serif;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #666;
+        margin-bottom: 0.4rem;
+        font-weight: 600;
+      }
+
+      .detail-body {
+        font-size: 0.9rem;
+        color: #333;
+      }
+
+      .detail-body ul {
+        padding-left: 1.3rem;
+      }
+
+      .detail-body li {
+        margin-bottom: 0.3rem;
+      }
+
+      .sources {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+
+      .source-tag {
+        font-family: sans-serif;
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+        border: 1px solid #d0d0d0;
+        background: #fafafa;
+        border-radius: 4px;
+        text-decoration: none;
+        color: #333;
+      }
+
+      .insights-box {
+        background: #f8f8f8;
+        border-left: 3px solid #121212;
+        padding: 0.75rem;
+      }
+
+      .insights-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.4rem;
+      }
+
+      .insights-toggle {
+        font-family: sans-serif;
+        font-size: 0.72rem;
+        padding: 0.2rem 0.5rem;
+        border: 1px solid #d0d0d0;
+        background: #fff;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .insights-list {
+        padding-left: 1.2rem;
+        font-size: 0.88rem;
+      }
+
+      .insights-list.hidden {
+        display: none;
+      }
+
+      .actions {
+        margin-top: 1rem;
+        padding-top: 0.6rem;
+        border-top: 1px solid #e8e8e8;
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      /* Modals */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 100;
+        display: none;
+        align-items: flex-end;
+      }
+
+      .modal.open {
+        display: flex;
+      }
+
+      .modal-panel {
+        background: #fff;
+        width: 100%;
+        max-height: 75vh;
+        border-radius: 20px 20px 0 0;
+        padding: 1.2rem;
+        overflow-y: auto;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .modal-header h2 {
+        font-size: 1.1rem;
+      }
+
+      .close-btn {
+        font-size: 1.5rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+      }
+
+      .filter-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .filter-group-title {
+        font-family: sans-serif;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #666;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+
+      .filter-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+
+      .filter-chip {
+        font-family: sans-serif;
+        font-size: 0.8rem;
+        padding: 0.35rem 0.7rem;
+        border: 1px solid #d0d0d0;
+        background: #fff;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+
+      .filter-chip.active {
+        background: #121212;
+        color: #fff;
+      }
+
+      /* Chat */
+      .chat-fab {
+        position: fixed;
+        bottom: 1rem;
+        right: 1rem;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: #121212;
+        color: #fff;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 50;
+      }
+
+      .chat-body {
+        font-family: sans-serif;
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 1rem;
+      }
+
+      .chat-example {
+        padding: 0.5rem;
+        margin: 0.3rem 0;
+        background: #f8f8f8;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        cursor: pointer;
+      }
+
+      .chat-input-row {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .chat-input {
+        flex: 1;
+        font-family: sans-serif;
+        font-size: 0.9rem;
+        padding: 0.7rem;
+        border: 1px solid #d0d0d0;
+        border-radius: 8px;
+      }
+
+      .chat-send {
+        padding: 0.7rem 1.2rem;
+        background: #121212;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      @media (min-width: 600px) {
+        h1 {
+          font-size: 2.5rem;
+        }
+        .story-title {
+          font-size: 1.3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div>
+        <h1 id="title">Today's News</h1>
+        <div class="date" id="date">Saturday, February 7, 2026</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn" id="filter-btn">⚙️</button>
+        <button class="btn active" data-mode="daily">Today</button>
+        <button class="btn" data-mode="weekly">Week</button>
+      </div>
+    </div>
+
+    <div class="topics">
+      <button class="topic-pill active" data-topic="all">All</button>
+      <button class="topic-pill" data-topic="security">Security</button>
+      <button class="topic-pill" data-topic="politics">Politics</button>
+      <button class="topic-pill" data-topic="economy">Economy</button>
+      <button class="topic-pill" data-topic="actors">Key Actors</button>
+    </div>
+
+    <div class="stories" id="stories"></div>
+
+    <!-- Filters Modal -->
+    <div class="modal" id="filters-modal">
+      <div class="modal-panel">
+        <div class="modal-header">
+          <h2>Filters & Settings</h2>
+          <button class="close-btn" onclick="closeModal('filters-modal')">
+            ×
+          </button>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-title">News Outlets / المصادر</div>
+          <div class="filter-options" id="outlet-filters"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <button class="chat-fab" id="chat-btn">💬</button>
+    <div class="modal" id="chat-modal">
+      <div class="modal-panel">
+        <div class="modal-header">
+          <h2>Ask the Brief / اسأل الملخص</h2>
+          <button class="close-btn" onclick="closeModal('chat-modal')">
+            ×
+          </button>
+        </div>
+        <div class="chat-body">
+          <p><strong>Ask me anything about today's events:</strong></p>
+          <div id="chat-examples"></div>
+        </div>
+        <div class="chat-input-row">
+          <input
+            class="chat-input"
+            id="chat-input"
+            type="text"
+            placeholder="Type your question..."
+          />
+          <button class="chat-send" onclick="sendChat()">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const DATA = [
+        {
+          id: 1,
+          mode: "daily",
+          topic: "security",
+          title: "Red Sea Shipping Faces New Disruptions",
+          summary:
+            "Houthi forces targeted another commercial vessel in the Red Sea corridor, prompting renewed security measures and insurance premium increases.",
+          context: [
+            "Part of ongoing attacks since late 2023",
+            "Coalition naval forces increased patrols",
+            "Previous incidents led to rerouting around Africa",
+          ],
+          sources: [
+            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
+            { name: "Arab News", url: "#", outlet: "arabnews" },
+            { name: "Al Arabiya", url: "#", outlet: "alarabiya" },
+          ],
+          insights: [
+            "<strong>Scenario 1:</strong> Sporadic attacks continue without major escalation",
+            "<strong>Scenario 2:</strong> Significant incident triggers expanded naval operations",
+            "<strong>Watch:</strong> US/UK naval presence, Houthi statements",
+          ],
+        },
+        {
+          id: 2,
+          mode: "daily",
+          topic: "politics",
+          title: "Qatar Hosts Regional Security Talks",
+          summary:
+            "Senior officials from Saudi Arabia, UAE, Kuwait, and Oman met in Doha to discuss maritime security cooperation and economic coordination.",
+          context: [
+            "Part of ongoing diplomatic efforts",
+            "Focus on practical security cooperation",
+            "Previous rounds produced limited joint exercises",
+          ],
+          sources: [
+            { name: "وكالة الأنباء السعودية", url: "#", outlet: "spa" },
+            { name: "Arab News", url: "#", outlet: "arabnews" },
+            { name: "Al Arabiya", url: "#", outlet: "alarabiya" },
+          ],
+          insights: [
+            "<strong>Scenario 1:</strong> Incremental agreements on joint patrols",
+            "<strong>Scenario 2:</strong> Major breakthrough on integrated defense",
+            "<strong>Watch:</strong> Follow-up meetings, joint exercises",
+          ],
+        },
+        {
+          id: 3,
+          mode: "daily",
+          topic: "economy",
+          title: "Egypt Currency Crisis Deepens",
+          summary:
+            "The Egyptian pound fell to historic lows as parallel market rates diverge sharply, complicating IMF negotiations.",
+          context: [
+            "Egypt needs $1.2B IMF disbursement",
+            "Government resists full currency float",
+            "Public protests growing over rising prices",
+          ],
+          sources: [
+            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
+            { name: "Arab News", url: "#", outlet: "arabnews" },
+            { name: "Al Majalah", url: "#", outlet: "almajalah" },
+          ],
+          insights: [
+            "<strong>Scenario 1:</strong> Gradual devaluation to satisfy IMF",
+            "<strong>Scenario 2:</strong> Negotiations stall, economic deterioration",
+            "<strong>Watch:</strong> IMF meetings, Central Bank moves",
+          ],
+        },
+        {
+          id: 4,
+          mode: "daily",
+          topic: "security",
+          title: "Turkey Expands Military Operations in Syria",
+          summary:
+            "Turkish forces deployed additional artillery and drone units to northern Syria citing increased PKK-YPG activities.",
+          context: [
+            "Turkey maintains multiple observation posts",
+            "Recent attacks attributed to SDF-linked groups",
+            "Operations risk escalating tensions",
+          ],
+          sources: [
+            { name: "The Syrian Observer", url: "#", outlet: "syrianobserver" },
+            { name: "Al Arabiya", url: "#", outlet: "alarabiya" },
+            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
+          ],
+          insights: [
+            "<strong>Scenario 1:</strong> Limited strikes without ground offensive",
+            "<strong>Scenario 2:</strong> Large-scale operation triggers pressure",
+            "<strong>Watch:</strong> Turkish Defense statements, US responses",
+          ],
+        },
+        {
+          id: 5,
+          mode: "daily",
+          topic: "politics",
+          title: "Saudi-Iran Dialogue Continues in Muscat",
+          summary:
+            "Senior diplomats held their fourth round of talks focusing on Yemen ceasefire implementation and bilateral trade.",
+          context: [
+            "Follows 2023 China-brokered normalization",
+            "Embassies reopened in late 2023",
+            "Practical cooperation remains limited",
+          ],
+          sources: [
+            { name: "Arab News", url: "#", outlet: "arabnews" },
+            { name: "وكالة الأنباء السعودية", url: "#", outlet: "spa" },
+            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
+          ],
+          insights: [
+            "<strong>Scenario 1:</strong> Modest progress on technical files",
+            "<strong>Scenario 2:</strong> Yemen breakthrough leads to broader understandings",
+            "<strong>Watch:</strong> Houthi behavior, ministerial visits",
+          ],
+        },
+        {
+          id: 6,
+          mode: "daily",
+          topic: "economy",
+          title: "UAE Announces $50 Billion Infrastructure Fund",
+          summary:
+            "Major investment initiative targeting renewable energy, transportation, and digital infrastructure across Arab countries.",
+          context: [
+            "Part of UAE economic diplomacy strategy",
+            "Follows similar initiatives in Africa",
+            "Projects via sovereign wealth partnerships",
+          ],
+          sources: [
+            { name: "Arab News", url: "#", outlet: "arabnews" },
+            { name: "Al Arabiya", url: "#", outlet: "alarabiya" },
+            { name: "وكالة الأنباء السعودية", url: "#", outlet: "spa" },
+          ],
+          insights: [
+            "<strong>Scenario 1:</strong> Gradual rollout enhancing UAE influence",
+            "<strong>Scenario 2:</strong> Political instability delays implementation",
+            "<strong>Watch:</strong> Project tenders, bilateral MOUs",
+          ],
+        },
+        {
+          id: 7,
+          mode: "daily",
+          topic: "actors",
+          title: "Israeli Cabinet Approves West Bank Security Measures",
+          summary:
+            "Cabinet authorized expanded military operations in Jenin and Nablus following attacks that killed Israeli soldiers.",
+          context: [
+            "West Bank violence at highest level since Second Intifada",
+            "PA security forces losing control",
+            "International pressure mounting",
+          ],
+          sources: [
+            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
+            { name: "Al Arabiya", url: "#", outlet: "alarabiya" },
+            { name: "Arab News", url: "#", outlet: "arabnews" },
+          ],
+          insights: [
+            "<strong>Scenario 1:</strong> Localized operations without Gaza escalation",
+            "<strong>Scenario 2:</strong> Violence spreads, drawing Hamas",
+            "<strong>Watch:</strong> Hamas statements, Egyptian mediation",
+          ],
+        },
+        {
+          id: 8,
+          mode: "daily",
+          topic: "actors",
+          title: "Iraq Parliament Debates US Troop Withdrawal",
+          summary:
+            "Lawmakers held contentious session on demanding full withdrawal of remaining 2,500 US troops.",
+          context: [
+            "US forces remain in advisory role",
+            "Iran-backed militias pressure for departure",
+            "Kurdistan fears security vacuum",
+          ],
+          sources: [
+            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
+            { name: "Arab News", url: "#", outlet: "arabnews" },
+          ],
+          insights: [
+            "<strong>Scenario 1:</strong> Phased withdrawal over 18-24 months",
+            "<strong>Scenario 2:</strong> Political deadlock, status quo",
+            "<strong>Watch:</strong> PM positioning, militia attacks",
+          ],
+        },
+        {
+          id: 11,
+          mode: "weekly",
+          topic: "politics",
+          title: "Week in Review: Gulf Cooperation Gains Momentum",
+          summary:
+            "Significant progress in GCC integration with agreements on customs union, joint defense planning, and coordinated energy policy.",
+          context: [
+            "Builds on Al-Ula summit momentum",
+            "Economic integration pathway",
+            "Shared concerns about Iran",
+          ],
+          sources: [
+            { name: "وكالة الأنباء السعودية", url: "#", outlet: "spa" },
+            { name: "Arab News", url: "#", outlet: "arabnews" },
+          ],
+          insights: [
+            "<strong>Scenario 1:</strong> Practical integration deepens",
+            "<strong>Scenario 2:</strong> Implementation challenges slow progress",
+          ],
+        },
+        {
+          id: 12,
+          mode: "weekly",
+          topic: "security",
+          title: "Week in Review: Syria Remains Volatile",
+          summary:
+            "Escalating violence with Turkish operations, Israeli strikes on Iranian positions, and regime crackdowns.",
+          context: [
+            "Multiple actors pursuing competing interests",
+            "No progress in Geneva process",
+            "Humanitarian crisis worsening",
+          ],
+          sources: [
+            { name: "The Syrian Observer", url: "#", outlet: "syrianobserver" },
+            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
+          ],
+          insights: [
+            "<strong>Scenario 1:</strong> Status quo continues",
+            "<strong>Scenario 2:</strong> Major incident risks escalation",
+          ],
+        },
+      ];
+
+      const OUTLETS = [
+        "middleeasteye",
+        "arabnews",
+        "almajalah",
+        "syrianobserver",
+        "spa",
+        "alarabiya",
+      ];
+      const CHAT_EXAMPLES = [
+        "Explain the scenarios after the Red Sea incident",
+        "Compare how outlets covered Qatar talks",
+        "What are Egypt economy risks?",
+        "لخّص أهم تحولات الأسبوع",
+      ];
+
+      let mode = "daily";
+      let topic = "all";
+      let saved = new Set();
+      let outlets = new Set(OUTLETS);
+
+      function render() {
+        const filtered = DATA.filter(
+          (s) =>
+            s.mode === mode &&
+            (topic === "all" || s.topic === topic) &&
+            s.sources.some((src) => outlets.has(src.outlet))
+        );
+
+        const html = filtered
+          .map((s) => {
+            const star = saved.has(s.id) ? "★" : "☆";
+            const starClass = saved.has(s.id) ? "saved" : "";
+            const activeSources = s.sources.filter((src) =>
+              outlets.has(src.outlet)
+            );
+
+            return `
+          <div class="story" data-id="${s.id}">
+            <div class="story-header" onclick="toggleStory(${s.id})">
+              <div class="story-main">
+                <div class="story-topic">${s.topic}</div>
+                <h2 class="story-title">${s.title}</h2>
+                <p class="story-summary">${s.summary}</p>
+              </div>
+              <div class="story-star ${starClass}" onclick="event.stopPropagation();toggleStar(${
+              s.id
+            })">${star}</div>
+            </div>
+            <div class="story-details">
+              <div class="detail-section">
+                <div class="detail-title">Sources / المصادر</div>
+                <div class="sources">
+                  ${activeSources
+                    .map(
+                      (src) =>
+                        `<a href="${src.url}" class="source-tag" target="_blank">${src.name}</a>`
+                    )
+                    .join("")}
+                </div>
+              </div>
+              <div class="detail-section">
+                <div class="detail-title">Context / السياق</div>
+                <div class="detail-body"><ul>${s.context
+                  .map((c) => `<li>${c}</li>`)
+                  .join("")}</ul></div>
+              </div>
+              <div class="detail-section">
+                <div class="insights-box">
+                  <div class="insights-header">
+                    <div class="detail-title" style="margin:0">Forward View / القراءة المستقبلية</div>
+                    <button class="insights-toggle" onclick="toggleInsights(${
+                      s.id
+                    })">Hide</button>
+                  </div>
+                  <ul class="insights-list" id="insights-${s.id}">${s.insights
+              .map((i) => `<li>${i}</li>`)
+              .join("")}</ul>
+                </div>
+              </div>
+              <div class="actions">
+                <button class="btn" onclick="speak('${s.title}. ${
+              s.summary
+            }')">🔊 Listen</button>
+                <button class="btn" onclick="askAbout('${
+                  s.title
+                }')">💬 Ask</button>
+              </div>
+            </div>
+          </div>
+        `;
+          })
+          .join("");
+
+        document.getElementById("stories").innerHTML =
+          html ||
+          '<p style="padding:2rem 0;text-align:center;color:#999">No stories match your filters.</p>';
+      }
+
+      function toggleStory(id) {
+        document
+          .querySelector(`[data-id="${id}"]`)
+          .classList.toggle("expanded");
+      }
+
+      function toggleStar(id) {
+        if (saved.has(id)) saved.delete(id);
+        else saved.add(id);
+        render();
+      }
+
+      function toggleInsights(id) {
+        const list = document.getElementById(`insights-${id}`);
+        const btn =
+          list.previousElementSibling.querySelector(".insights-toggle");
+        list.classList.toggle("hidden");
+        btn.textContent = list.classList.contains("hidden") ? "Show" : "Hide";
+      }
+
+      function speak(text) {
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          window.speechSynthesis.speak(u);
+        } else alert("Text-to-speech not supported");
+      }
+
+      function askAbout(title) {
+        document.getElementById(
+          "chat-input"
+        ).value = `Tell me more about: ${title}`;
+        openModal("chat-modal");
+      }
+
+      function openModal(id) {
+        document.getElementById(id).classList.add("open");
+      }
+
+      function closeModal(id) {
+        document.getElementById(id).classList.remove("open");
+      }
+
+      function sendChat() {
+        const val = document.getElementById("chat-input").value.trim();
+        if (val) {
+          alert(`AI chat coming soon!\n\nYour question: "${val}"`);
+          document.getElementById("chat-input").value = "";
+        }
+      }
+
+      // Event listeners
+      document.querySelectorAll("[data-mode]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll("[data-mode]")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          mode = btn.dataset.mode;
+          document.getElementById("title").textContent =
+            mode === "weekly" ? "This Week's News" : "Today's News";
+          document.getElementById("date").textContent =
+            mode === "weekly"
+              ? "Week of Feb 1–7, 2026"
+              : "Saturday, February 7, 2026";
+          render();
+        });
+      });
+
+      document.querySelectorAll("[data-topic]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll("[data-topic]")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          topic = btn.dataset.topic;
+          render();
+        });
+      });
+
+      document.getElementById("filter-btn").onclick = () =>
+        openModal("filters-modal");
+      document.getElementById("chat-btn").onclick = () =>
+        openModal("chat-modal");
+
+      // Init outlet filters
+      document.getElementById("outlet-filters").innerHTML = OUTLETS.map((o) => {
+        const names = {
+          middleeasteye: "Middle East Eye",
+          arabnews: "Arab News",
+          almajalah: "Al Majalah",
+          syrianobserver: "The Syrian Observer",
+          spa: "وكالة الأنباء السعودية",
+          alarabiya: "Al Arabiya",
+        };
+        return `<button class="filter-chip active" onclick="toggleOutlet('${o}')" data-outlet="${o}">${names[o]}</button>`;
+      }).join("");
+
+      function toggleOutlet(o) {
+        const btn = document.querySelector(`[data-outlet="${o}"]`);
+        if (outlets.has(o)) {
+          outlets.delete(o);
+          btn.classList.remove("active");
+        } else {
+          outlets.add(o);
+          btn.classList.add("active");
+        }
+        render();
+      }
+
+      // Init chat examples
+      document.getElementById("chat-examples").innerHTML = CHAT_EXAMPLES.map(
+        (ex) =>
+          `<div class="chat-example" onclick="document.getElementById('chat-input').value='${ex}'">${ex}</div>`
+      ).join("");
+
+      render();
+    </script>
+  </body>
+</html>
