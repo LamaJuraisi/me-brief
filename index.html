@@ -405,6 +405,10 @@
       <button class="topic-pill" data-topic="politics">Politics</button>
       <button class="topic-pill" data-topic="economy">Economy</button>
       <button class="topic-pill" data-topic="actors">Key Actors</button>
+      <button class="topic-pill" data-country="Saudi Arabia">🇸🇦 Saudi</button>
+      <button class="topic-pill" data-country="Syria">🇸🇾 Syria</button>
+      <button class="topic-pill" data-country="Sudan">🇸🇩 Sudan</button>
+      <button class="topic-pill" data-country="Iran">🇮🇷 Iran</button>
     </div>
 
     <div class="stories" id="stories"></div>
@@ -414,9 +418,7 @@
       <div class="modal-panel">
         <div class="modal-header">
           <h2>Filters & Settings</h2>
-          <button class="close-btn" onclick="closeModal('filters-modal')">
-            ×
-          </button>
+          <button class="close-btn" onclick="closeModal('filters-modal')">×</button>
         </div>
         <div class="filter-group">
           <div class="filter-group-title">News Outlets / المصادر</div>
@@ -431,196 +433,255 @@
       <div class="modal-panel">
         <div class="modal-header">
           <h2>Ask the Brief / اسأل الملخص</h2>
-          <button class="close-btn" onclick="closeModal('chat-modal')">
-            ×
-          </button>
+          <button class="close-btn" onclick="closeModal('chat-modal')">×</button>
         </div>
         <div class="chat-body">
           <p><strong>Ask me anything about today's events:</strong></p>
           <div id="chat-examples"></div>
         </div>
         <div class="chat-input-row">
-          <input
-            class="chat-input"
-            id="chat-input"
-            type="text"
-            placeholder="Type your question..."
-          />
+          <input class="chat-input" id="chat-input" type="text" placeholder="Type your question..." />
           <button class="chat-send" onclick="sendChat()">Send</button>
         </div>
       </div>
     </div>
 
     <script>
-      // RSS2JSON API (free tier)
-const RSS_FEEDS = [
-  { outlet: 'arabnews', url: 'https://www.arabnews.com/rss', name: 'Arab News' },
-  { outlet: 'middleeasteye', url: 'https://middleeasteye.net/rss', name: 'Middle East Eye' },
-  { outlet: 'syrianobserver', url: 'https://syrianobserver.com/feed', name: 'The Syrian Observer' },
-  { outlet: 'spa', url: 'https://www.spa.gov.sa/rss.xml', name: 'وكالة الأنباء السعودية' }
-];
-
-// Auto-categorize based on keywords
-function categorizeStory(title, summary) {
-  const text = (title + ' ' + summary).toLowerCase();
-  
-  if (text.match(/military|attack|strike|weapon|forces|troops|war|conflict|security|defense|houthi|israel|gaza|west bank/)) 
-    return 'security';
-  if (text.match(/election|government|minister|president|parliament|diplomatic|summit|talks|agreement|treaty|visit/)) 
-    return 'politics';
-  if (text.match(/economy|trade|market|oil|opec|investment|currency|gdp|inflation|imf|bank|finance|billion/)) 
-    return 'economy';
-  if (text.match(/saudi|iran|uae|qatar|egypt|turkey|iraq|syria|jordan|kuwait|oman|bahrain|lebanon/)) 
-    return 'actors';
-  
-  return 'politics'; // default
-}
-
-// Fetch real RSS feeds
-async function fetchRealNews() {
-  const allStories = [];
-  let storyId = 1;
-  
-  for (const feed of RSS_FEEDS) {
-    try {
-      const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`);
-      const data = await response.json();
-      
-      if (data.items) {
-        data.items.slice(0, 5).forEach(item => { // Get 5 latest from each outlet
-          const story = {
-            id: storyId++,
-            mode: 'daily',
-            topic: categorizeStory(item.title, item.description || ''),
-            title: item.title,
-            summary: (item.description || item.content || '').replace(/<[^>]*>/g, '').substring(0, 250) + '...',
-            context: [
-              'This is a developing story',
-              'More details to follow',
-              'Source: ' + feed.name
-            ],
-            sources: [{ name: feed.name, url: item.link || '#', outlet: feed.outlet }],
-            insights: [
-              '<strong>Developing:</strong> Story is breaking, analysis pending',
-              '<strong>Watch:</strong> Follow for updates'
-            ]
-          };
-          allStories.push(story);
-        });
-      }
-    } catch (error) {
-      console.error(`Failed to fetch ${feed.name}:`, error);
-    }
-  }
-  
-  return allStories;
-}
-
-      let DATA = []; // Will be populated from RSS feeds
-
-
-      const OUTLETS = [
-        "middleeasteye",
-        "arabnews",
-        "almajalah",
-        "syrianobserver",
-        "spa",
-        "alarabiya",
+      // RSS2JSON API
+      const RSS_FEEDS = [
+        { outlet: 'arabnews', url: 'https://www.arabnews.com/rss', name: 'Arab News' },
+        { outlet: 'middleeasteye', url: 'https://middleeasteye.net/rss', name: 'Middle East Eye' },
+        { outlet: 'syrianobserver', url: 'https://syrianobserver.com/feed', name: 'The Syrian Observer' },
+        { outlet: 'spa', url: 'https://www.spa.gov.sa/rss.xml', name: 'وكالة الأنباء السعودية' },
+        { outlet: 'alarabiya', url: 'https://english.alarabiya.net/rss.xml', name: 'Al Arabiya' }
       ];
+
+      // Clean text for speech
+      function cleanTextForSpeech(text) {
+        return text
+          .replace(/<[^>]*>/g, '')
+          .replace(/&[^;]+;/g, ' ')
+          .replace(/[^\w\s.,!?-]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      // Detect country
+      function detectCountry(title, summary) {
+        const text = (title + ' ' + summary).toLowerCase();
+        
+        if (text.match(/saudi|riyadh|jeddah|kingdom|ksa|mbs|crown prince/)) return 'Saudi Arabia';
+        if (text.match(/syria|damascus|aleppo|idlib|assad|syrian/)) return 'Syria';
+        if (text.match(/sudan|khartoum|rsf|burhan|hemedti|sudanese/)) return 'Sudan';
+        if (text.match(/iran|tehran|iranian|irgc|ayatollah/)) return 'Iran';
+        if (text.match(/egypt|cairo|egyptian|sisi/)) return 'Egypt';
+        if (text.match(/uae|dubai|abu dhabi|emirates/)) return 'UAE';
+        if (text.match(/qatar|doha|qatari/)) return 'Qatar';
+        if (text.match(/yemen|houthi|sanaa|aden|yemeni/)) return 'Yemen';
+        if (text.match(/iraq|baghdad|iraqi|mosul/)) return 'Iraq';
+        if (text.match(/turkey|ankara|erdogan|turkish/)) return 'Turkey';
+        if (text.match(/israel|jerusalem|netanyahu|israeli/)) return 'Israel';
+        if (text.match(/palestine|gaza|west bank|hamas|palestinian/)) return 'Palestine';
+        if (text.match(/lebanon|beirut|hezbollah|lebanese/)) return 'Lebanon';
+        if (text.match(/jordan|amman|jordanian/)) return 'Jordan';
+        
+        return 'Regional';
+      }
+
+      // Auto-categorize
+      function categorizeStory(title, summary) {
+        const text = (title + ' ' + summary).toLowerCase();
+        
+        if (text.match(/military|attack|strike|weapon|forces|troops|war|conflict|security|defense|houthi|israel|gaza|west bank|drone|missile|clash/)) 
+          return 'security';
+        if (text.match(/election|government|minister|president|parliament|diplomatic|summit|talks|agreement|treaty|visit|cabinet|policy/)) 
+          return 'politics';
+        if (text.match(/economy|trade|market|oil|opec|investment|currency|gdp|inflation|imf|bank|finance|billion|dollar|economic/)) 
+          return 'economy';
+        
+        return 'actors';
+      }
+
+      // Generate context
+      function generateContext(title, summary, country, outlet) {
+        const contexts = [];
+        
+        if (country && country !== 'Regional') {
+          contexts.push(`Event occurring in ${country}`);
+        }
+        
+        const text = (title + ' ' + summary).toLowerCase();
+        if (text.match(/saudi|gcc|gulf/)) {
+          contexts.push('Relevant to Gulf Cooperation Council dynamics');
+        }
+        if (text.match(/iran|israel|palestine/)) {
+          contexts.push('Part of broader regional security considerations');
+        }
+        if (text.match(/syria|iraq|turkey/)) {
+          contexts.push('Connected to Levant stability issues');
+        }
+        
+        contexts.push(`Reported by ${outlet}`);
+        
+        if (contexts.length < 2) {
+          contexts.push('Developing story with regional implications');
+        }
+        
+        return contexts.slice(0, 3);
+      }
+
+      // Generate insights
+      function generateInsights(title, summary, topic) {
+        const text = (title + ' ' + summary).toLowerCase();
+        const insights = [];
+        
+        if (topic === 'security') {
+          insights.push('<strong>Watch:</strong> Potential escalation or de-escalation signals from key actors');
+          if (text.match(/israel|palestine|gaza/)) {
+            insights.push('<strong>Risk:</strong> Spillover effects could impact broader regional stability');
+          }
+          if (text.match(/houthi|yemen|red sea/)) {
+            insights.push('<strong>Impact:</strong> Possible effects on maritime shipping and global trade routes');
+          }
+        } else if (topic === 'politics') {
+          insights.push('<strong>Watch:</strong> Follow-up statements from involved parties and international reactions');
+          if (text.match(/saudi|iran|talks|dialogue/)) {
+            insights.push('<strong>Significance:</strong> Could signal shift in regional power dynamics');
+          }
+        } else if (topic === 'economy') {
+          insights.push('<strong>Watch:</strong> Market reactions and policy responses from central banks or governments');
+          if (text.match(/oil|opec/)) {
+            insights.push('<strong>Impact:</strong> Potential effects on global energy prices and regional revenues');
+          }
+        } else {
+          insights.push('<strong>Watch:</strong> Developments in coming days and regional responses');
+        }
+        
+        if (insights.length < 2) {
+          insights.push('<strong>Context:</strong> Part of ongoing developments in the region');
+        }
+        
+        return insights.slice(0, 3);
+      }
+
+      // Fetch RSS feeds
+      async function fetchRealNews() {
+        const allStories = [];
+        let storyId = 1;
+        
+        for (const feed of RSS_FEEDS) {
+          try {
+            const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`);
+            const data = await response.json();
+            
+            if (data.status === 'ok' && data.items) {
+              data.items.slice(0, 6).forEach(item => {
+                const rawContent = item.description || item.content || '';
+                const cleanContent = rawContent
+                  .replace(/<[^>]*>/g, '')
+                  .replace(/&[^;]+;/g, ' ')
+                  .replace(/\s+/g, ' ')
+                  .trim();
+                
+                const summary = cleanContent.substring(0, 450) + (cleanContent.length > 450 ? '...' : '');
+                const country = detectCountry(item.title, cleanContent);
+                const topic = categorizeStory(item.title, cleanContent);
+                
+                const story = {
+                  id: storyId++,
+                  mode: 'daily',
+                  topic: topic,
+                  country: country,
+                  title: item.title,
+                  summary: summary || 'Full article available at source link.',
+                  context: generateContext(item.title, cleanContent, country, feed.name),
+                  sources: [{ name: feed.name, url: item.link || '#', outlet: feed.outlet }],
+                  insights: generateInsights(item.title, cleanContent, topic)
+                };
+                allStories.push(story);
+              });
+            }
+          } catch (error) {
+            console.error(`Failed to fetch ${feed.name}:`, error);
+          }
+        }
+        
+        return allStories;
+      }
+
+      let DATA = [];
+
+      const OUTLETS = ["middleeasteye", "arabnews", "almajalah", "syrianobserver", "spa", "alarabiya"];
       const CHAT_EXAMPLES = [
         "Explain the scenarios after the Red Sea incident",
         "Compare how outlets covered Qatar talks",
         "What are Egypt economy risks?",
-        "لخّص أهم تحولات الأسبوع",
+        "لخّص أهم تحولات الأسبوع"
       ];
 
       let mode = "daily";
       let topic = "all";
+      let currentCountry = null;
       let saved = new Set();
       let outlets = new Set(OUTLETS);
 
       function render() {
-        const filtered = DATA.filter(
-          (s) =>
-            s.mode === mode &&
-            (topic === "all" || s.topic === topic) &&
-            s.sources.some((src) => outlets.has(src.outlet))
+        const filtered = DATA.filter(s => 
+          s.mode === mode && 
+          (topic === "all" || s.topic === topic) && 
+          (!currentCountry || s.country === currentCountry) &&
+          s.sources.some(src => outlets.has(src.outlet))
         );
 
-        const html = filtered
-          .map((s) => {
-            const star = saved.has(s.id) ? "★" : "☆";
-            const starClass = saved.has(s.id) ? "saved" : "";
-            const activeSources = s.sources.filter((src) =>
-              outlets.has(src.outlet)
-            );
+        const html = filtered.map(s => {
+          const star = saved.has(s.id) ? "★" : "☆";
+          const starClass = saved.has(s.id) ? "saved" : "";
+          const activeSources = s.sources.filter(src => outlets.has(src.outlet));
 
-            return `
-          <div class="story" data-id="${s.id}">
-            <div class="story-header" onclick="toggleStory(${s.id})">
-              <div class="story-main">
-                <div class="story-topic">${s.topic}</div>
-                <h2 class="story-title">${s.title}</h2>
-                <p class="story-summary">${s.summary}</p>
-              </div>
-              <div class="story-star ${starClass}" onclick="event.stopPropagation();toggleStar(${
-              s.id
-            })">${star}</div>
-            </div>
-            <div class="story-details">
-              <div class="detail-section">
-                <div class="detail-title">Sources / المصادر</div>
-                <div class="sources">
-                  ${activeSources
-                    .map(
-                      (src) =>
-                        `<a href="${src.url}" class="source-tag" target="_blank">${src.name}</a>`
-                    )
-                    .join("")}
+          return `
+            <div class="story" data-id="${s.id}">
+              <div class="story-header" onclick="toggleStory(${s.id})">
+                <div class="story-main">
+                  <div class="story-topic">${s.topic}${s.country ? ' • ' + s.country : ''}</div>
+                  <h2 class="story-title">${s.title}</h2>
+                  <p class="story-summary">${s.summary}</p>
                 </div>
+                <div class="story-star ${starClass}" onclick="event.stopPropagation();toggleStar(${s.id})">${star}</div>
               </div>
-              <div class="detail-section">
-                <div class="detail-title">Context / السياق</div>
-                <div class="detail-body"><ul>${s.context
-                  .map((c) => `<li>${c}</li>`)
-                  .join("")}</ul></div>
-              </div>
-              <div class="detail-section">
-                <div class="insights-box">
-                  <div class="insights-header">
-                    <div class="detail-title" style="margin:0">Forward View / القراءة المستقبلية</div>
-                    <button class="insights-toggle" onclick="toggleInsights(${
-                      s.id
-                    })">Hide</button>
+              <div class="story-details">
+                <div class="detail-section">
+                  <div class="detail-title">Sources / المصادر</div>
+                  <div class="sources">
+                    ${activeSources.map(src => `<a href="${src.url}" class="source-tag" target="_blank">${src.name}</a>`).join("")}
                   </div>
-                  <ul class="insights-list" id="insights-${s.id}">${s.insights
-              .map((i) => `<li>${i}</li>`)
-              .join("")}</ul>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-title">Context / السياق</div>
+                  <div class="detail-body"><ul>${s.context.map(c => `<li>${c}</li>`).join("")}</ul></div>
+                </div>
+                <div class="detail-section">
+                  <div class="insights-box">
+                    <div class="insights-header">
+                      <div class="detail-title" style="margin:0">Forward View / القراءة المستقبلية</div>
+                      <button class="insights-toggle" onclick="toggleInsights(${s.id})">Hide</button>
+                    </div>
+                    <ul class="insights-list" id="insights-${s.id}">${s.insights.map(i => `<li>${i}</li>`).join("")}</ul>
+                  </div>
+                </div>
+                <div class="actions">
+                  <button class="btn" onclick="speakStory(${s.id})">🔊 Listen</button>
+                  <button class="btn" onclick="askAbout('${s.title.replace(/'/g, "\\'")}')">💬 Ask</button>
                 </div>
               </div>
-              <div class="actions">
-                <button class="btn" onclick="speak('${s.title}. ${
-              s.summary
-            }')">🔊 Listen</button>
-                <button class="btn" onclick="askAbout('${
-                  s.title
-                }')">💬 Ask</button>
-              </div>
             </div>
-          </div>
-        `;
-          })
-          .join("");
+          `;
+        }).join("");
 
-        document.getElementById("stories").innerHTML =
-          html ||
-          '<p style="padding:2rem 0;text-align:center;color:#999">No stories match your filters.</p>';
+        document.getElementById("stories").innerHTML = html || '<p style="padding:2rem 0;text-align:center;color:#999">No stories match your filters.</p>';
       }
 
       function toggleStory(id) {
-        document
-          .querySelector(`[data-id="${id}"]`)
-          .classList.toggle("expanded");
+        document.querySelector(`[data-id="${id}"]`).classList.toggle("expanded");
       }
 
       function toggleStar(id) {
@@ -631,59 +692,62 @@ async function fetchRealNews() {
 
       function toggleInsights(id) {
         const list = document.getElementById(`insights-${id}`);
-        const btn =
-          list.previousElementSibling.querySelector(".insights-toggle");
+        const btn = list.previousElementSibling.querySelector(".insights-toggle");
         list.classList.toggle("hidden");
         btn.textContent = list.classList.contains("hidden") ? "Show" : "Hide";
       }
 
-      // Google Cloud Text-to-Speech
-const GOOGLE_API_KEY = 'AIzaSyA6FCtmBvNRT68pkaYVHGDmhhb83Ea1RcU';
+      // Google TTS
+      const GOOGLE_API_KEY = 'AIzaSyA6FCtmBvNRT68pkaYVHGDmhhb83Ea1RcU';
 
-async function speak(text) {
-  try {
-    const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        input: { text: text },
-        voice: {
-  languageCode: 'en-US',
-  name: 'en-US-Neural2-D',  // ← Natural, warm male voice
-  ssmlGender: 'MALE'
-},
+      async function speak(text) {
+        try {
+          const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              input: { text: text },
+              voice: {
+                languageCode: 'en-US',
+                name: 'en-US-Neural2-D',
+                ssmlGender: 'MALE'
+              },
+              audioConfig: {
+                audioEncoding: 'MP3',
+                pitch: 0,
+                speakingRate: 1.08
+              }
+            })
+          });
 
-        audioConfig: {
-          audioEncoding: 'MP3',
-          pitch: 0,
-          speakingRate: 1.08
+          const data = await response.json();
+          
+          if (data.audioContent) {
+            const audio = new Audio('data:audio/mp3;base64,' + data.audioContent);
+            audio.play();
+          } else {
+            console.error('Google TTS Error:', data);
+            alert('Voice playback failed. Error: ' + (data.error?.message || 'Unknown'));
+          }
+        } catch (error) {
+          console.error('Speech error:', error);
+          alert('Voice playback failed. Check console for details.');
         }
-      })
-    });
+      }
 
-    const data = await response.json();
-    
-    if (data.audioContent) {
-      const audio = new Audio('data:audio/mp3;base64,' + data.audioContent);
-      audio.play();
-    } else {
-      console.error('Google TTS Error:', data);
-      alert('Voice playback failed. Error: ' + (data.error?.message || 'Unknown'));
-    }
-  } catch (error) {
-    console.error('Speech error:', error);
-    alert('Voice playback failed. Check console for details.');
-  }
-}
-
-
+      function speakStory(id) {
+        const story = DATA.find(s => s.id === id);
+        if (!story) return;
+        
+        const cleanTitle = cleanTextForSpeech(story.title);
+        const cleanSummary = cleanTextForSpeech(story.summary);
+        const text = cleanTitle + '. ' + cleanSummary;
+        
+        speak(text);
+      }
 
       function askAbout(title) {
-        document.getElementById(
-          "chat-input"
-        ).value = `Tell me more about: ${title}`;
+        document.getElementById("chat-input").value = `Tell me more about: ${title}`;
         openModal("chat-modal");
       }
 
@@ -704,48 +768,46 @@ async function speak(text) {
       }
 
       // Event listeners
-      document.querySelectorAll("[data-mode]").forEach((btn) => {
+      document.querySelectorAll("[data-mode]").forEach(btn => {
         btn.addEventListener("click", () => {
-          document
-            .querySelectorAll("[data-mode]")
-            .forEach((b) => b.classList.remove("active"));
+          document.querySelectorAll("[data-mode]").forEach(b => b.classList.remove("active"));
           btn.classList.add("active");
           mode = btn.dataset.mode;
-          document.getElementById("title").textContent =
-            mode === "weekly" ? "This Week's News" : "Today's News";
-          document.getElementById("date").textContent =
-            mode === "weekly"
-              ? "Week of Feb 1–7, 2026"
-              : "Saturday, February 7, 2026";
+          document.getElementById("title").textContent = mode === "weekly" ? "This Week's News" : "Today's News";
+          document.getElementById("date").textContent = mode === "weekly" ? "Week of Feb 1–7, 2026" : "Saturday, February 7, 2026";
           render();
         });
       });
 
-      document.querySelectorAll("[data-topic]").forEach((btn) => {
+      document.querySelectorAll(".topic-pill").forEach(btn => {
         btn.addEventListener("click", () => {
-          document
-            .querySelectorAll("[data-topic]")
-            .forEach((b) => b.classList.remove("active"));
+          document.querySelectorAll(".topic-pill").forEach(b => b.classList.remove("active"));
           btn.classList.add("active");
-          topic = btn.dataset.topic;
+          
+          if (btn.dataset.topic) {
+            topic = btn.dataset.topic;
+            currentCountry = null;
+          } else if (btn.dataset.country) {
+            currentCountry = btn.dataset.country;
+            topic = 'all';
+          }
+          
           render();
         });
       });
 
-      document.getElementById("filter-btn").onclick = () =>
-        openModal("filters-modal");
-      document.getElementById("chat-btn").onclick = () =>
-        openModal("chat-modal");
+      document.getElementById("filter-btn").onclick = () => openModal("filters-modal");
+      document.getElementById("chat-btn").onclick = () => openModal("chat-modal");
 
       // Init outlet filters
-      document.getElementById("outlet-filters").innerHTML = OUTLETS.map((o) => {
+      document.getElementById("outlet-filters").innerHTML = OUTLETS.map(o => {
         const names = {
           middleeasteye: "Middle East Eye",
           arabnews: "Arab News",
           almajalah: "Al Majalah",
           syrianobserver: "The Syrian Observer",
           spa: "وكالة الأنباء السعودية",
-          alarabiya: "Al Arabiya",
+          alarabiya: "Al Arabiya"
         };
         return `<button class="filter-chip active" onclick="toggleOutlet('${o}')" data-outlet="${o}">${names[o]}</button>`;
       }).join("");
@@ -763,32 +825,19 @@ async function speak(text) {
       }
 
       // Init chat examples
-      document.getElementById("chat-examples").innerHTML = CHAT_EXAMPLES.map(
-        (ex) =>
-          `<div class="chat-example" onclick="document.getElementById('chat-input').value='${ex}'">${ex}</div>`
+      document.getElementById("chat-examples").innerHTML = CHAT_EXAMPLES.map(ex =>
+        `<div class="chat-example" onclick="document.getElementById('chat-input').value='${ex}'">${ex}</div>`
       ).join("");
 
-            // Load real news on startup
+      // Load news
       async function init() {
-        // Show loading message
         document.getElementById('stories').innerHTML = '<p style="padding:2rem 0;text-align:center;color:#999">Loading latest news...</p>';
-        
-        // Fetch real RSS feeds
         const realNews = await fetchRealNews();
         DATA = realNews;
-        
-        // Render stories
         render();
       }
       
       init();
     </script>
-
-    </script>
   </body>
 </html>
-
-
-
-
-
