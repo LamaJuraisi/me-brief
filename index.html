@@ -452,233 +452,72 @@
     </div>
 
     <script>
-      const DATA = [
-        {
-          id: 1,
-          mode: "daily",
-          topic: "security",
-          title: "Red Sea Shipping Faces New Disruptions",
-          summary:
-            "Houthi forces targeted another commercial vessel in the Red Sea corridor, prompting renewed security measures and insurance premium increases.",
-          context: [
-            "Part of ongoing attacks since late 2023",
-            "Coalition naval forces increased patrols",
-            "Previous incidents led to rerouting around Africa",
-          ],
-          sources: [
-            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
-            { name: "Arab News", url: "#", outlet: "arabnews" },
-            { name: "Al Arabiya", url: "#", outlet: "alarabiya" },
-          ],
-          insights: [
-            "<strong>Scenario 1:</strong> Sporadic attacks continue without major escalation",
-            "<strong>Scenario 2:</strong> Significant incident triggers expanded naval operations",
-            "<strong>Watch:</strong> US/UK naval presence, Houthi statements",
-          ],
-        },
-        {
-          id: 2,
-          mode: "daily",
-          topic: "politics",
-          title: "Qatar Hosts Regional Security Talks",
-          summary:
-            "Senior officials from Saudi Arabia, UAE, Kuwait, and Oman met in Doha to discuss maritime security cooperation and economic coordination.",
-          context: [
-            "Part of ongoing diplomatic efforts",
-            "Focus on practical security cooperation",
-            "Previous rounds produced limited joint exercises",
-          ],
-          sources: [
-            { name: "وكالة الأنباء السعودية", url: "#", outlet: "spa" },
-            { name: "Arab News", url: "#", outlet: "arabnews" },
-            { name: "Al Arabiya", url: "#", outlet: "alarabiya" },
-          ],
-          insights: [
-            "<strong>Scenario 1:</strong> Incremental agreements on joint patrols",
-            "<strong>Scenario 2:</strong> Major breakthrough on integrated defense",
-            "<strong>Watch:</strong> Follow-up meetings, joint exercises",
-          ],
-        },
-        {
-          id: 3,
-          mode: "daily",
-          topic: "economy",
-          title: "Egypt Currency Crisis Deepens",
-          summary:
-            "The Egyptian pound fell to historic lows as parallel market rates diverge sharply, complicating IMF negotiations.",
-          context: [
-            "Egypt needs $1.2B IMF disbursement",
-            "Government resists full currency float",
-            "Public protests growing over rising prices",
-          ],
-          sources: [
-            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
-            { name: "Arab News", url: "#", outlet: "arabnews" },
-            { name: "Al Majalah", url: "#", outlet: "almajalah" },
-          ],
-          insights: [
-            "<strong>Scenario 1:</strong> Gradual devaluation to satisfy IMF",
-            "<strong>Scenario 2:</strong> Negotiations stall, economic deterioration",
-            "<strong>Watch:</strong> IMF meetings, Central Bank moves",
-          ],
-        },
-        {
-          id: 4,
-          mode: "daily",
-          topic: "security",
-          title: "Turkey Expands Military Operations in Syria",
-          summary:
-            "Turkish forces deployed additional artillery and drone units to northern Syria citing increased PKK-YPG activities.",
-          context: [
-            "Turkey maintains multiple observation posts",
-            "Recent attacks attributed to SDF-linked groups",
-            "Operations risk escalating tensions",
-          ],
-          sources: [
-            { name: "The Syrian Observer", url: "#", outlet: "syrianobserver" },
-            { name: "Al Arabiya", url: "#", outlet: "alarabiya" },
-            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
-          ],
-          insights: [
-            "<strong>Scenario 1:</strong> Limited strikes without ground offensive",
-            "<strong>Scenario 2:</strong> Large-scale operation triggers pressure",
-            "<strong>Watch:</strong> Turkish Defense statements, US responses",
-          ],
-        },
-        {
-          id: 5,
-          mode: "daily",
-          topic: "politics",
-          title: "Saudi-Iran Dialogue Continues in Muscat",
-          summary:
-            "Senior diplomats held their fourth round of talks focusing on Yemen ceasefire implementation and bilateral trade.",
-          context: [
-            "Follows 2023 China-brokered normalization",
-            "Embassies reopened in late 2023",
-            "Practical cooperation remains limited",
-          ],
-          sources: [
-            { name: "Arab News", url: "#", outlet: "arabnews" },
-            { name: "وكالة الأنباء السعودية", url: "#", outlet: "spa" },
-            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
-          ],
-          insights: [
-            "<strong>Scenario 1:</strong> Modest progress on technical files",
-            "<strong>Scenario 2:</strong> Yemen breakthrough leads to broader understandings",
-            "<strong>Watch:</strong> Houthi behavior, ministerial visits",
-          ],
-        },
-        {
-          id: 6,
-          mode: "daily",
-          topic: "economy",
-          title: "UAE Announces $50 Billion Infrastructure Fund",
-          summary:
-            "Major investment initiative targeting renewable energy, transportation, and digital infrastructure across Arab countries.",
-          context: [
-            "Part of UAE economic diplomacy strategy",
-            "Follows similar initiatives in Africa",
-            "Projects via sovereign wealth partnerships",
-          ],
-          sources: [
-            { name: "Arab News", url: "#", outlet: "arabnews" },
-            { name: "Al Arabiya", url: "#", outlet: "alarabiya" },
-            { name: "وكالة الأنباء السعودية", url: "#", outlet: "spa" },
-          ],
-          insights: [
-            "<strong>Scenario 1:</strong> Gradual rollout enhancing UAE influence",
-            "<strong>Scenario 2:</strong> Political instability delays implementation",
-            "<strong>Watch:</strong> Project tenders, bilateral MOUs",
-          ],
-        },
-        {
-          id: 7,
-          mode: "daily",
-          topic: "actors",
-          title: "Israeli Cabinet Approves West Bank Security Measures",
-          summary:
-            "Cabinet authorized expanded military operations in Jenin and Nablus following attacks that killed Israeli soldiers.",
-          context: [
-            "West Bank violence at highest level since Second Intifada",
-            "PA security forces losing control",
-            "International pressure mounting",
-          ],
-          sources: [
-            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
-            { name: "Al Arabiya", url: "#", outlet: "alarabiya" },
-            { name: "Arab News", url: "#", outlet: "arabnews" },
-          ],
-          insights: [
-            "<strong>Scenario 1:</strong> Localized operations without Gaza escalation",
-            "<strong>Scenario 2:</strong> Violence spreads, drawing Hamas",
-            "<strong>Watch:</strong> Hamas statements, Egyptian mediation",
-          ],
-        },
-        {
-          id: 8,
-          mode: "daily",
-          topic: "actors",
-          title: "Iraq Parliament Debates US Troop Withdrawal",
-          summary:
-            "Lawmakers held contentious session on demanding full withdrawal of remaining 2,500 US troops.",
-          context: [
-            "US forces remain in advisory role",
-            "Iran-backed militias pressure for departure",
-            "Kurdistan fears security vacuum",
-          ],
-          sources: [
-            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
-            { name: "Arab News", url: "#", outlet: "arabnews" },
-          ],
-          insights: [
-            "<strong>Scenario 1:</strong> Phased withdrawal over 18-24 months",
-            "<strong>Scenario 2:</strong> Political deadlock, status quo",
-            "<strong>Watch:</strong> PM positioning, militia attacks",
-          ],
-        },
-        {
-          id: 11,
-          mode: "weekly",
-          topic: "politics",
-          title: "Week in Review: Gulf Cooperation Gains Momentum",
-          summary:
-            "Significant progress in GCC integration with agreements on customs union, joint defense planning, and coordinated energy policy.",
-          context: [
-            "Builds on Al-Ula summit momentum",
-            "Economic integration pathway",
-            "Shared concerns about Iran",
-          ],
-          sources: [
-            { name: "وكالة الأنباء السعودية", url: "#", outlet: "spa" },
-            { name: "Arab News", url: "#", outlet: "arabnews" },
-          ],
-          insights: [
-            "<strong>Scenario 1:</strong> Practical integration deepens",
-            "<strong>Scenario 2:</strong> Implementation challenges slow progress",
-          ],
-        },
-        {
-          id: 12,
-          mode: "weekly",
-          topic: "security",
-          title: "Week in Review: Syria Remains Volatile",
-          summary:
-            "Escalating violence with Turkish operations, Israeli strikes on Iranian positions, and regime crackdowns.",
-          context: [
-            "Multiple actors pursuing competing interests",
-            "No progress in Geneva process",
-            "Humanitarian crisis worsening",
-          ],
-          sources: [
-            { name: "The Syrian Observer", url: "#", outlet: "syrianobserver" },
-            { name: "Middle East Eye", url: "#", outlet: "middleeasteye" },
-          ],
-          insights: [
-            "<strong>Scenario 1:</strong> Status quo continues",
-            "<strong>Scenario 2:</strong> Major incident risks escalation",
-          ],
-        },
-      ];
+      // RSS2JSON API (free tier)
+const RSS_FEEDS = [
+  { outlet: 'arabnews', url: 'https://www.arabnews.com/rss', name: 'Arab News' },
+  { outlet: 'middleeasteye', url: 'https://middleeasteye.net/rss', name: 'Middle East Eye' },
+  { outlet: 'syrianobserver', url: 'https://syrianobserver.com/feed', name: 'The Syrian Observer' },
+  { outlet: 'spa', url: 'https://www.spa.gov.sa/rss.xml', name: 'وكالة الأنباء السعودية' }
+];
+
+// Auto-categorize based on keywords
+function categorizeStory(title, summary) {
+  const text = (title + ' ' + summary).toLowerCase();
+  
+  if (text.match(/military|attack|strike|weapon|forces|troops|war|conflict|security|defense|houthi|israel|gaza|west bank/)) 
+    return 'security';
+  if (text.match(/election|government|minister|president|parliament|diplomatic|summit|talks|agreement|treaty|visit/)) 
+    return 'politics';
+  if (text.match(/economy|trade|market|oil|opec|investment|currency|gdp|inflation|imf|bank|finance|billion/)) 
+    return 'economy';
+  if (text.match(/saudi|iran|uae|qatar|egypt|turkey|iraq|syria|jordan|kuwait|oman|bahrain|lebanon/)) 
+    return 'actors';
+  
+  return 'politics'; // default
+}
+
+// Fetch real RSS feeds
+async function fetchRealNews() {
+  const allStories = [];
+  let storyId = 1;
+  
+  for (const feed of RSS_FEEDS) {
+    try {
+      const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`);
+      const data = await response.json();
+      
+      if (data.items) {
+        data.items.slice(0, 5).forEach(item => { // Get 5 latest from each outlet
+          const story = {
+            id: storyId++,
+            mode: 'daily',
+            topic: categorizeStory(item.title, item.description || ''),
+            title: item.title,
+            summary: (item.description || item.content || '').replace(/<[^>]*>/g, '').substring(0, 250) + '...',
+            context: [
+              'This is a developing story',
+              'More details to follow',
+              'Source: ' + feed.name
+            ],
+            sources: [{ name: feed.name, url: item.link || '#', outlet: feed.outlet }],
+            insights: [
+              '<strong>Developing:</strong> Story is breaking, analysis pending',
+              '<strong>Watch:</strong> Follow for updates'
+            ]
+          };
+          allStories.push(story);
+        });
+      }
+    } catch (error) {
+      console.error(`Failed to fetch ${feed.name}:`, error);
+    }
+  }
+  
+  return allStories;
+}
+
+      let DATA = []; // Will be populated from RSS feeds
+
 
       const OUTLETS = [
         "middleeasteye",
@@ -929,10 +768,26 @@ async function speak(text) {
           `<div class="chat-example" onclick="document.getElementById('chat-input').value='${ex}'">${ex}</div>`
       ).join("");
 
-      render();
+            // Load real news on startup
+      async function init() {
+        // Show loading message
+        document.getElementById('stories').innerHTML = '<p style="padding:2rem 0;text-align:center;color:#999">Loading latest news...</p>';
+        
+        // Fetch real RSS feeds
+        const realNews = await fetchRealNews();
+        DATA = realNews;
+        
+        // Render stories
+        render();
+      }
+      
+      init();
+    </script>
+
     </script>
   </body>
 </html>
+
 
 
 
