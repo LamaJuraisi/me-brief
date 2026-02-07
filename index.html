@@ -448,12 +448,252 @@
 
     <script>
       // RSS Feeds
-      const RSS_FEEDS = [
-        { outlet: 'arabnews', url: 'https://www.arabnews.com/rss', name: 'Arab News' },
-        { outlet: 'middleeasteye', url: 'https://middleeasteye.net/rss', name: 'Middle East Eye' },
-        { outlet: 'syrianobserver', url: 'https://syrianobserver.com/feed', name: 'The Syrian Observer' },
-        { outlet: 'spa', url: 'https://www.spa.gov.sa/rss.xml', name: 'وكالة الأنباء السعودية' }
-      ];
+      // RSS Feeds
+const RSS_FEEDS = [
+  { outlet: 'arabnews', url: 'https://www.arabnews.com/rss', name: 'Arab News' },
+  { outlet: 'middleeasteye', url: 'https://middleeasteye.net/rss', name: 'Middle East Eye' },
+  { outlet: 'syrianobserver', url: 'https://syrianobserver.com/feed', name: 'The Syrian Observer' },
+  { outlet: 'spa', url: 'https://www.spa.gov.sa/rss.xml', name: 'وكالة الأنباء السعودية' }
+];
+
+// Better content extraction - keep the meat, remove the junk
+function extractBetterContent(html) {
+  // Remove HTML tags
+  let text = html.replace(/<[^>]*>/g, ' ');
+  
+  // Remove specific junk patterns but keep the article content
+  text = text
+    .replace(/Submitted by [A-Za-z\s]+ on [A-Za-z0-9,\s:/-]+/gi, '')
+    .replace(/Comments follow reports that/gi, '')
+    .replace(/Copies of [^.]+displayed at a kiosk[^.]+/gi, '')
+    .replace(/\([A-Z][a-z]+ [A-Z][a-z]+\/[^\)]*\)/g, '') // Photo credits
+    .replace(/Photo:|Image:|AFP|Reuters|Getty Images/gi, '')
+    .replace(/&[^;]+;/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  
+  // Fix broken sentence starts like "Off Iran's missile"
+  text = text.replace(/^(Off|The|A)\s+([A-Z])/g, (match, prefix, letter) => letter);
+  
+  return text;
+}
+
+// Extract first few meaningful paragraphs as summary
+function createDetailedSummary(content, maxChars = 600) {
+  const cleaned = extractBetterContent(content);
+  
+  // Split into sentences
+  const sentences = cleaned
+    .split(/(?<=[.!?])\s+/)
+    .filter(s => {
+      const words = s.trim().split(/\s+/);
+      return words.length >= 6 && // At least 6 words
+             !s.match(/^(Click|Read more|Share|Subscribe|Follow)/i) && // No CTAs
+             s.length > 40; // At least 40 characters
+    });
+  
+  if (sentences.length === 0) {
+    return null;
+  }
+  
+  // Take sentences until we hit maxChars
+  let summary = '';
+  let charCount = 0;
+  
+  for (const sentence of sentences) {
+    if (charCount + sentence.length > maxChars && summary.length > 200) {
+      break;
+    }
+    summary += sentence.trim() + ' ';
+    charCount += sentence.length;
+  }
+  
+  // Ensure it ends properly
+  summary = summary.trim();
+  if (!summary.match(/[.!?]$/)) {
+    const lastPeriod = summary.lastIndexOf('.');
+    if (lastPeriod > 200) {
+      summary = summary.substring(0, lastPeriod + 1);
+    } else {
+      summary += '...';
+    }
+  }
+  
+  return summary;
+}
+
+// Clean text for speech
+function cleanTextForSpeech(text) {
+  return text
+    .replace(/<[^>]*>/g, '')
+    .replace(/&[^;]+;/g, ' ')
+    .replace(/\d{1,2}:\d{2}\s*(AM|PM|am|pm)?/g, '')
+    .replace(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4}/gi, '')
+    .replace(/\d{4}-\d{2}-\d{2}/g, '')
+    .replace(/(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/gi, '')
+    .replace(/By\s+[A-Z][a-z]+\s+[A-Z][a-z]+/g, '')
+    .replace(/[^\w\s.,!?-]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Detect country
+function detectCountry(title, summary) {
+  const text = (title + ' ' + summary).toLowerCase();
+  
+  if (text.match(/\b(saudi|riyadh|jeddah|kingdom|ksa|mbs|crown prince)\b/)) return 'Saudi Arabia';
+  if (text.match(/\b(syria|damascus|aleppo|idlib|assad|syrian)\b/)) return 'Syria';
+  if (text.match(/\b(sudan|khartoum|rsf|burhan|hemedti|sudanese)\b/)) return 'Sudan';
+  if (text.match(/\b(iran|tehran|iranian|irgc|ayatollah|khamenei)\b/)) return 'Iran';
+  if (text.match(/\b(egypt|cairo|egyptian|sisi)\b/)) return 'Egypt';
+  if (text.match(/\b(uae|dubai|abu dhabi|emirates)\b/)) return 'UAE';
+  if (text.match(/\b(qatar|doha|qatari)\b/)) return 'Qatar';
+  if (text.match(/\b(yemen|houthi|sanaa|aden|yemeni)\b/)) return 'Yemen';
+  if (text.match(/\b(iraq|baghdad|iraqi|mosul)\b/)) return 'Iraq';
+  if (text.match(/\b(turkey|ankara|erdogan|turkish)\b/)) return 'Turkey';
+  if (text.match(/\b(israel|jerusalem|netanyahu|israeli)\b/)) return 'Israel';
+  if (text.match(/\b(palestine|gaza|west bank|hamas|palestinian)\b/)) return 'Palestine';
+  if (text.match(/\b(lebanon|beirut|hezbollah|lebanese)\b/)) return 'Lebanon';
+  if (text.match(/\b(jordan|amman|jordanian)\b/)) return 'Jordan';
+  
+  return 'Regional';
+}
+
+// Improved categorization
+function categorizeStory(title, summary) {
+  const text = (title + ' ' + summary).toLowerCase();
+  
+  if (text.match(/\b(military|attack|strike|weapon|forces|troops|war|conflict|security|defense|drone|missile|clash|combat|militant|terror|bombing|explosion|violence|killed|casualties|armed|fighter|soldier)\b/)) {
+    return 'security';
+  }
+  
+  if (text.match(/\b(economy|trade|market|oil|opec|investment|currency|gdp|inflation|imf|bank|finance|billion|dollar|economic|price|export|import|stock|revenue|budget|energy)\b/)) {
+    return 'economy';
+  }
+  
+  if (text.match(/\b(election|government|minister|president|parliament|diplomatic|summit|talks|agreement|treaty|visit|cabinet|policy|legislation|law|reform|vote|leader|official|negotiation)\b/)) {
+    return 'politics';
+  }
+  
+  return 'actors';
+}
+
+// Generate context
+function generateContext(title, summary, country, outlet) {
+  const contexts = [];
+  
+  if (country && country !== 'Regional') {
+    contexts.push(`Event in ${country}`);
+  }
+  
+  const text = (title + ' ' + summary).toLowerCase();
+  
+  if (text.match(/\b(gcc|gulf|cooperation|saudi|uae|qatar|kuwait|oman|bahrain)\b/)) {
+    contexts.push('GCC regional implications');
+  } else if (text.match(/\b(iran|sanctions|nuclear|irgc)\b/)) {
+    contexts.push('Part of Iran regional strategy');
+  } else if (text.match(/\b(israel|palestine|gaza|west bank)\b/)) {
+    contexts.push('Israeli-Palestinian conflict developments');
+  } else if (text.match(/\b(syria|iraq|levant)\b/)) {
+    contexts.push('Levant stability considerations');
+  }
+  
+  contexts.push(`Source: ${outlet}`);
+  
+  return contexts.slice(0, 3);
+}
+
+// Generate insights
+function generateInsights(title, summary, topic, country) {
+  const text = (title + ' ' + summary).toLowerCase();
+  const insights = [];
+  
+  if (topic === 'security') {
+    insights.push('<strong>Watch:</strong> Escalation/de-escalation signals from key actors');
+    
+    if (text.match(/\b(gaza|palestine|israel)\b/)) {
+      insights.push('<strong>Risk:</strong> Regional spillover potential');
+    } else if (text.match(/\b(houthi|red sea|maritime)\b/)) {
+      insights.push('<strong>Impact:</strong> Global trade and energy routes');
+    } else if (text.match(/\b(iran|irgc|proxy)\b/)) {
+      insights.push('<strong>Concern:</strong> Regional proxy dynamics');
+    }
+  } else if (topic === 'politics') {
+    insights.push('<strong>Watch:</strong> Official reactions and follow-up moves');
+    
+    if (text.match(/\b(saudi|iran|dialogue|talks)\b/)) {
+      insights.push('<strong>Significance:</strong> Regional power balance shift');
+    } else if (text.match(/\b(election|reform|vote)\b/)) {
+      insights.push('<strong>Context:</strong> Domestic political trajectory');
+    }
+  } else if (topic === 'economy') {
+    insights.push('<strong>Watch:</strong> Market and policy responses');
+    
+    if (text.match(/\b(oil|opec|energy)\b/)) {
+      insights.push('<strong>Impact:</strong> Global energy market effects');
+    } else if (text.match(/\b(currency|inflation|imf)\b/)) {
+      insights.push('<strong>Risk:</strong> Economic stability concerns');
+    }
+  } else {
+    insights.push('<strong>Watch:</strong> Follow developments and statements');
+  }
+  
+  if (insights.length < 2) {
+    insights.push('<strong>Context:</strong> Part of regional trends');
+  }
+  
+  return insights.slice(0, 3);
+}
+
+// Fetch RSS feeds
+async function fetchRealNews() {
+  const allStories = [];
+  let storyId = 1;
+  
+  for (const feed of RSS_FEEDS) {
+    try {
+      const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`);
+      const data = await response.json();
+      
+      if (data.status === 'ok' && data.items) {
+        for (const item of data.items.slice(0, 7)) {
+          const rawContent = item.description || item.content || '';
+          
+          // Create detailed summary
+          const summary = createDetailedSummary(rawContent, 600);
+          
+          // Skip if we couldn't extract a good summary
+          if (!summary || summary.length < 100) {
+            console.log(`Skipped story (poor summary): ${item.title}`);
+            continue;
+          }
+          
+          const country = detectCountry(item.title, summary);
+          const topic = categorizeStory(item.title, summary);
+          
+          const story = {
+            id: storyId++,
+            mode: 'daily',
+            topic: topic,
+            country: country,
+            title: item.title,
+            summary: summary,
+            context: generateContext(item.title, summary, country, feed.name),
+            sources: [{ name: feed.name, url: item.link || '#', outlet: feed.outlet }],
+            insights: generateInsights(item.title, summary, topic, country)
+          };
+          
+          allStories.push(story);
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to fetch ${feed.name}:`, error);
+    }
+  }
+  
+  return allStories;
+}
+
 
       // Clean metadata from RSS content
       function cleanMetadata(text) {
@@ -956,4 +1196,5 @@ function createSummaryFromTitle(title, rawText) {
     </script>
   </body>
 </html>
+
 
