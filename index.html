@@ -811,10 +811,11 @@ async function speak(text) {
       body: JSON.stringify({
         input: { text: text },
         voice: {
-          languageCode: 'en-US',
-          name: 'en-US-Neural2-F',
-          ssmlGender: 'FEMALE'
-        },
+  languageCode: 'en-US',
+  name: 'en-US-Neural2-C',  // ← More conversational, warmer
+  ssmlGender: 'FEMALE'
+},
+
         audioConfig: {
           audioEncoding: 'MP3',
           pitch: 0,
@@ -932,5 +933,6 @@ async function speak(text) {
     </script>
   </body>
 </html>
+
 
 
